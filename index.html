@@ -233,6 +233,14 @@
       margin: 30px 0 22px;
     }
 
+    .roulette-actions {
+      position: relative;
+      z-index: 4;
+      display: none;
+      gap: 10px;
+      margin: 0 0 12px;
+    }
+
     .btn {
       position: relative;
       isolation: isolate;
@@ -793,12 +801,23 @@
       }
 
       h1 {
-        font-size: clamp(42px, 13vw, 62px);
+        margin-bottom: 8px;
+        font-size: clamp(32px, 11vw, 46px);
+      }
+
+      .eyebrow {
+        margin-bottom: 8px;
+        font-size: 10px;
       }
 
       .hero {
-        gap: 18px;
-        padding-bottom: 20px;
+        gap: 12px;
+        padding-top: 0;
+        padding-bottom: 18px;
+      }
+
+      .hero-copy {
+        text-align: center;
       }
 
       .hero-text {
@@ -806,13 +825,30 @@
       }
 
       .actions {
+        display: none;
+      }
+
+      .roulette-actions {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr);
       }
 
       .btn {
         width: 100%;
         min-height: 58px;
+      }
+
+      .roulette-actions .btn {
+        min-height: 48px;
+        padding: 0 12px;
+        border-radius: 16px;
+        font-size: 14px;
+        letter-spacing: -0.015em;
+      }
+
+      .hero-text,
+      .stats {
+        display: none;
       }
 
       .stats {
@@ -840,7 +876,7 @@
       }
 
       .roulette-window {
-        height: 254px;
+        height: 238px;
         border-radius: 23px;
       }
 
@@ -873,13 +909,24 @@
       }
 
       .winner {
-        grid-template-columns: 1fr;
-        text-align: center;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+        padding: 12px;
+        text-align: left;
         border-radius: 22px;
       }
 
       .winner-orb {
-        margin: 0 auto;
+        width: 54px;
+        height: 54px;
+        margin: 0;
+        border-radius: 18px;
+        font-size: 20px;
+      }
+
+      .winner h2 {
+        font-size: 24px;
       }
 
       .filters {
@@ -946,8 +993,8 @@
           <h1>Выбери бойца случайно</h1>
           <p class="hero-text">Крути рулетку, настраивай фильтры и узнавай, за кого играть в следующем бою.</p>
           <div class="actions">
-            <button class="btn" id="spinBtn" type="button">Крутить рулетку</button>
-            <button class="btn secondary" id="filterBtn" type="button">Фильтры</button>
+            <button class="btn" id="spinBtn" data-spin type="button">Крутить рулетку</button>
+            <button class="btn secondary" id="filterBtn" data-filter type="button">Фильтры</button>
           </div>
           <div class="stats" aria-label="Статистика рулетки">
             <div class="stat"><strong id="availableCount">104</strong><span>доступно</span></div>
@@ -960,6 +1007,10 @@
           <div class="roulette-head">
             <span>Рулетка карточек</span>
             <span class="pill" id="statusPill">готово</span>
+          </div>
+          <div class="roulette-actions" aria-label="Управление рулеткой">
+            <button class="btn" id="spinBtnMobile" data-spin type="button">Крутить</button>
+            <button class="btn secondary" id="filterBtnMobile" data-filter type="button">Фильтры</button>
           </div>
           <div class="roulette-window" id="rouletteWindow" aria-label="Окно рулетки">
             <div class="marker" aria-hidden="true"></div>
@@ -1797,8 +1848,8 @@
     const els = {
       track: document.querySelector("#rouletteTrack"),
       window: document.querySelector("#rouletteWindow"),
-      spinBtn: document.querySelector("#spinBtn"),
-      filterBtn: document.querySelector("#filterBtn"),
+      spinBtns: document.querySelectorAll("[data-spin]"),
+      filterBtns: document.querySelectorAll("[data-filter]"),
       soundToggle: document.querySelector("#soundToggle"),
       statusPill: document.querySelector("#statusPill"),
       winnerCard: document.querySelector("#winnerCard"),
@@ -1959,7 +2010,10 @@
 
     function setSpinning(value) {
       state.spinning = value;
-      els.spinBtn.disabled = value;
+      els.spinBtns.forEach(button => {
+        button.disabled = value;
+        button.textContent = value ? "Крутится..." : (button.id === "spinBtnMobile" ? "Крутить" : "Крутить рулетку");
+      });
       els.track.classList.toggle("is-spinning", value);
       els.statusPill.textContent = value ? "крутится" : "готово";
       els.statusPill.classList.toggle("spinning", value);
@@ -2024,7 +2078,7 @@
       els.track.style.transform = `translateX(${start}px)`;
       els.track.getBoundingClientRect();
 
-      if (els.track.animate) {
+      if (els.track.animate && !prefersReduced) {
         const animation = els.track.animate([
           { transform: `translateX(${start}px)`, offset: 0 },
           { transform: `translateX(${nearFinish}px)`, offset: 0.94 },
@@ -2122,8 +2176,10 @@
       renderChips(els.rarityChips, RARITIES, "rarity");
       renderChips(els.classChips, CLASSES, "class");
       updateChips();
-      els.spinBtn.addEventListener("click", spin);
-      els.filterBtn.addEventListener("click", () => els.filters.scrollIntoView({ behavior: "smooth", block: "start" }));
+      els.spinBtns.forEach(button => button.addEventListener("click", spin));
+      els.filterBtns.forEach(button => {
+        button.addEventListener("click", () => els.filters.scrollIntoView({ behavior: "smooth", block: "start" }));
+      });
       els.soundToggle.addEventListener("click", () => {
         state.soundOn = !state.soundOn;
         els.soundToggle.setAttribute("aria-pressed", String(state.soundOn));
