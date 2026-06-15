@@ -962,7 +962,7 @@
       }
     }
   </style>
-</head>
+<script type="text/javascript" nonce="73aa381493314a048c11ea8c1c3" src="//local.adguard.org?ts=1781551788287&amp;type=content-script&amp;dmn=chatgpt.com&amp;url=https%3A%2F%2Fchatgpt.com%2Fbackend-api%2Festuary%2Fcontent%3Fid%3Dfile_00000000644c71f4984f95785010befb%26fn%3Dindex%25287%2529.html%26cd%3Dattachment%26ts%3D494875%26p%3Dfs%26cid%3D1%26sig%3D4bac2d186b1008f45a783fad54b68cc7dac05b0c3b36e422e1b0cb54f908973a%26v%3D0&amp;app=firefox.exe&amp;css=2&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="73aa381493314a048c11ea8c1c3" src="//local.adguard.org?ts=1781551788287&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script></head>
 <body>
   <canvas id="confetti" aria-hidden="true"></canvas>
 
@@ -1842,7 +1842,8 @@
       soundOn: true,
       audio: null,
       tickTimer: null,
-      currentAnimation: null
+      currentAnimation: null,
+      animationFrame: null
     };
 
     const els = {
@@ -1897,6 +1898,7 @@
     }
 
     function toggleFilter(group, value) {
+      if (state.spinning) return;
       const set = state[group];
       if (value === "Все") {
         state[group] = new Set(["Все"]);
@@ -1945,10 +1947,7 @@
 
     function renderIdleTrack() {
       const list = getFilteredBrawlers();
-      if (state.currentAnimation) {
-        state.currentAnimation.cancel();
-        state.currentAnimation = null;
-      }
+      cancelSpinMotion();
       els.track.classList.remove("is-spinning");
       els.track.style.transition = "none";
       els.track.style.transform = "translateX(0px)";
@@ -1992,20 +1991,23 @@
       });
     }
 
-    function startTickLoop(duration) {
-      const started = performance.now();
-      const loop = () => {
-        if (!state.spinning) return;
-        const progress = Math.min(1, (performance.now() - started) / duration);
-        playTick();
-        state.tickTimer = setTimeout(loop, 42 + progress * 160);
-      };
-      loop();
-    }
-
-    function stopTickLoop() {
+    function cancelSpinMotion() {
       if (state.tickTimer) clearTimeout(state.tickTimer);
       state.tickTimer = null;
+      if (state.animationFrame) cancelAnimationFrame(state.animationFrame);
+      state.animationFrame = null;
+      if (state.currentAnimation) {
+        state.currentAnimation.cancel();
+        state.currentAnimation = null;
+      }
+    }
+
+    function easeSpin(t) {
+      return 1 - Math.pow(1 - t, 3.25);
+    }
+
+    function lerp(start, end, amount) {
+      return start + (end - start) * amount;
     }
 
     function setSpinning(value) {
@@ -2021,19 +2023,25 @@
 
     function buildSpinSequence(list, winner) {
       const compact = isCompactScreen();
-      const lead = compact ? 7 : 9;
-      const fastRun = compact ? 66 : 84;
+      const lead = compact ? 5 : 7;
+      const fastRun = compact ? 44 : 56;
       const tail = compact ? 14 : 18;
-      const extra = Math.floor(Math.random() * (compact ? 10 : 16));
+      const extra = Math.floor(Math.random() * (compact ? 8 : 12));
       const winnerIndex = lead + fastRun + extra;
       const total = winnerIndex + tail + 1;
-      const sequence = Array.from({ length: total }, () => randomFrom(list));
+      const sequence = Array.from({ length: total }, (_, index) => list[index % list.length]);
+
+      for (let i = sequence.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [sequence[i], sequence[j]] = [sequence[j], sequence[i]];
+      }
+
       sequence[winnerIndex] = winner;
       return { sequence, winnerIndex, startIndex: lead };
     }
 
     function finishSpin(winner, winnerIndex, landing) {
-      stopTickLoop();
+      cancelSpinMotion();
       setSpinning(false);
       els.track.style.transition = "none";
       els.track.style.transform = `translateX(${landing}px)`;
@@ -2048,58 +2056,62 @@
       if (state.spinning) return;
       const list = getFilteredBrawlers();
       if (!list.length) return;
+
       const winner = randomFrom(list);
       const { sequence, winnerIndex, startIndex } = buildSpinSequence(list, winner);
+      const compact = isCompactScreen();
       const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const duration = prefersReduced ? 900 : (isCompactScreen() ? 5800 : 6600) + Math.floor(Math.random() * 900);
+      const duration = prefersReduced
+        ? (compact ? 2600 : 3000)
+        : (compact ? 4600 : 5000) + Math.floor(Math.random() * (compact ? 500 : 650));
+
       setSpinning(true);
       playStart();
-      startTickLoop(duration);
-      if (state.currentAnimation) {
-        state.currentAnimation.cancel();
-        state.currentAnimation = null;
-      }
+      cancelSpinMotion();
+
       els.track.style.transition = "none";
       els.track.innerHTML = sequence.map(brawler => cardTemplate(brawler)).join("");
       els.track.getBoundingClientRect();
+
       const start = centerCardTransform(startIndex);
       const landing = centerCardTransform(winnerIndex);
-      const nearFinish = landing + (landing < start ? 34 : -34);
-      let finished = false;
-      const complete = () => {
-        if (finished) return;
-        finished = true;
-        if (state.currentAnimation) {
-          state.currentAnimation.cancel();
-          state.currentAnimation = null;
-        }
-        finishSpin(winner, winnerIndex, landing);
-      };
-      els.track.style.transform = `translateX(${start}px)`;
+      els.track.style.transform = `translate3d(${start}px, 0, 0)`;
       els.track.getBoundingClientRect();
 
-      if (els.track.animate && !prefersReduced) {
-        const animation = els.track.animate([
-          { transform: `translateX(${start}px)`, offset: 0 },
-          { transform: `translateX(${nearFinish}px)`, offset: 0.94 },
-          { transform: `translateX(${landing}px)`, offset: 1 }
-        ], {
-          duration,
-          easing: "cubic-bezier(.08,.72,.03,1)",
-          fill: "forwards"
-        });
-        state.currentAnimation = animation;
-        animation.onfinish = complete;
-        window.setTimeout(complete, duration + 220);
-      } else {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            els.track.style.transition = `transform ${duration}ms cubic-bezier(.08,.72,.03,1)`;
-            els.track.style.transform = `translateX(${landing}px)`;
-          });
-        });
-        window.setTimeout(complete, duration + 120);
-      }
+      const started = performance.now();
+      let lastTickTime = 0;
+      let completed = false;
+
+      const complete = () => {
+        if (completed) return;
+        completed = true;
+        state.animationFrame = null;
+        finishSpin(winner, winnerIndex, landing);
+      };
+
+      const frame = now => {
+        if (!state.spinning) return;
+        const elapsed = now - started;
+        const progress = Math.min(1, elapsed / duration);
+        const eased = easeSpin(progress);
+        const x = lerp(start, landing, eased);
+
+        els.track.style.transform = `translate3d(${x}px, 0, 0)`;
+
+        const tickDelay = 34 + progress * 165;
+        if (state.soundOn && elapsed - lastTickTime >= tickDelay && progress < .985) {
+          playTick();
+          lastTickTime = elapsed;
+        }
+
+        if (progress < 1) {
+          state.animationFrame = requestAnimationFrame(frame);
+        } else {
+          complete();
+        }
+      };
+
+      state.animationFrame = requestAnimationFrame(frame);
     }
 
     function showWinner(brawler) {
