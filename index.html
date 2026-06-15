@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#11124a" />
+  <meta name="description" content="Красивая фанатская рулетка бойцов Brawl Stars: крути, фильтруй по редкости и классу, получай случайного бойца для следующей катки." />
+  <title>Brawl Roulette — рулетка бойцов</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Brawl Roulette">
+        <span class="brand-mark">BR</span>
+        <span>
+          <strong>Brawl Roulette</strong>
+          <small>фанатская рулетка бойцов</small>
+        </span>
+      </a>
+
+      <nav class="nav-links" aria-label="Навигация">
+        <a href="#roulette">Рулетка</a>
+        <a href="#modes">Режимы</a>
+        <a href="#how">Как работает</a>
+      </nav>
+
+      <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true">
+        <span aria-hidden="true">🔊</span>
+        <span class="sound-text">Звук</span>
+      </button>
+    </header>
+
+    <main id="top">
+      <section class="hero" id="roulette">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">104 бойца · фильтры · звук</p>
+          <h1>Крути рулетку и выбирай бойца</h1>
+          <p class="hero-text">
+            Запускай рулетку, включай фильтры и получай случайного бойца для следующей катки.
+          </p>
+
+          <div class="hero-actions">
+            <button class="primary-btn" id="spinBtn" type="button">
+              <span class="btn-glow"></span>
+              <span>Крутить рулетку</span>
+            </button>
+            <button class="ghost-btn mobile-filter-btn" id="mobileFilterBtn" type="button">Фильтры</button>
+          </div>
+
+          <div class="mini-stats" aria-label="Статистика рулетки">
+            <div><strong id="availableCount">104</strong><span>доступно</span></div>
+            <div><strong id="spinCount">0</strong><span>кручений</span></div>
+            <div><strong id="lastRarity">—</strong><span>редкость</span></div>
+          </div>
+        </div>
+
+        <div class="roulette-card reveal">
+          <div class="roulette-topline">
+            <span>Рулетка карточек</span>
+            <span class="live-pill" id="statusPill">готово</span>
+          </div>
+
+          <div class="roulette-window" id="rouletteWindow" aria-label="Окно рулетки">
+            <div class="center-marker" aria-hidden="true"></div>
+            <div class="roulette-track" id="rouletteTrack"></div>
+          </div>
+
+          <article class="winner-card" id="winnerCard" aria-live="polite">
+            <div class="winner-orb" id="winnerOrb">?</div>
+            <div>
+              <p class="winner-kicker">Пока никто не выпал</p>
+              <h2 id="winnerName">Нажми кнопку</h2>
+              <p id="winnerMeta">и запусти рулетку</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="filters-panel reveal" id="filtersPanel" aria-label="Фильтры рулетки">
+        <div class="section-heading compact">
+          <p class="eyebrow">Настрой выбор</p>
+          <h2>Фильтры</h2>
+        </div>
+
+        <div class="filter-grid">
+          <div>
+            <div class="filter-title">Редкость</div>
+            <div class="chip-row" id="rarityChips"></div>
+          </div>
+          <div>
+            <div class="filter-title">Класс</div>
+            <div class="chip-row" id="classChips"></div>
+          </div>
+        </div>
+
+        <div class="filters-footer">
+          <button class="ghost-btn" id="resetFilters" type="button">Сбросить</button>
+          <button class="primary-btn small" id="applyMobileFilters" type="button">Применить</button>
+        </div>
+      </section>
+
+      <section class="modes" id="modes">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Выбирай стиль игры</p>
+          <h2>Игровые режимы</h2>
+        </div>
+        <div class="mode-grid">
+          <article class="info-card reveal">
+            <span class="card-icon">🎲</span>
+            <h3>Обычная рулетка</h3>
+            <p>Выбирает любого бойца из полного списка — идеально для быстрых челленджей.</p>
+          </article>
+          <article class="info-card reveal">
+            <span class="card-icon">🏆</span>
+            <h3>По редкости</h3>
+            <p>Можно крутить только эпических, мифических, легендарных или любых других.</p>
+          </article>
+          <article class="info-card reveal">
+            <span class="card-icon">⚡</span>
+            <h3>По классу</h3>
+            <p>Отдельно выбирай танков, убийц, стрелков, поддержку, контроль, урон или артиллерию.</p>
+          </article>
+          <article class="info-card reveal">
+            <span class="card-icon">🔥</span>
+            <h3>Челлендж</h3>
+            <p>Выпавший боец — обязательный выбор для следующего боя. Перекрут запрещён.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="how" id="how">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Всё просто</p>
+          <h2>Как пользоваться</h2>
+        </div>
+        <div class="steps">
+          <div class="step reveal"><span>1</span><p>Выбери редкость или класс, если хочешь сузить список.</p></div>
+          <div class="step reveal"><span>2</span><p>Нажми «Крутить рулетку» и дождись остановки карточек.</p></div>
+          <div class="step reveal"><span>3</span><p>Играй за выпавшего бойца или крути ещё раз для нового выбора.</p></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Фанатский проект по Brawl Stars. Не связан с Supercell, не одобрен и не спонсируется Supercell.</p>
+      
+    </footer>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
