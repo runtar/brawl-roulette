@@ -1,77 +1,1066 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#11124a" />
-  <meta name="description" content="Красивая фанатская рулетка бойцов Brawl Stars: крути, фильтруй по редкости и классу, получай случайного бойца для следующей катки." />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d2b">
+  <meta name="description" content="Фанатская рулетка бойцов Brawl Stars: крути карточки, выбирай фильтры по редкости и классу, получай случайного бойца для следующей катки.">
+  <meta property="og:title" content="Brawl Roulette — рулетка бойцов">
+  <meta property="og:description" content="Красивая рулетка бойцов Brawl Stars для случайного выбора персонажа.">
+  <meta property="og:type" content="website">
   <title>Brawl Roulette — рулетка бойцов</title>
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --bg: #07071b;
+      --bg-soft: #12134f;
+      --card: rgba(255, 255, 255, 0.1);
+      --card-strong: rgba(255, 255, 255, 0.15);
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.72);
+      --line: rgba(255, 255, 255, 0.16);
+      --yellow: #ffe45c;
+      --cyan: #42eaff;
+      --pink: #ff4ed2;
+      --shadow: 0 28px 86px rgba(0, 0, 0, 0.42);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255, 78, 210, 0.33), transparent 34%),
+        radial-gradient(circle at 88% 4%, rgba(66, 234, 255, 0.24), transparent 36%),
+        radial-gradient(circle at 55% 110%, rgba(255, 228, 92, 0.14), transparent 42%),
+        linear-gradient(135deg, #07071b 0%, #101145 54%, #241035 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.8), transparent 88%);
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    #confetti {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .header {
+      position: sticky;
+      top: 12px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 16px 0 34px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(10, 12, 42, 0.7);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.25);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--yellow), #ff8a3c 46%, var(--pink));
+      color: #1b1022;
+      font-weight: 1000;
+      letter-spacing: -0.08em;
+      box-shadow: 0 0 34px rgba(255, 228, 92, .34);
+    }
+
+    .brand strong,
+    .brand small {
+      display: block;
+    }
+
+    .brand strong {
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .brand small {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .nav {
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .nav a {
+      padding: 10px 13px;
+      border-radius: 999px;
+      color: var(--muted);
+      transition: color .2s ease, background .2s ease;
+    }
+
+    .nav a:hover {
+      color: #fff;
+      background: rgba(255,255,255,.12);
+    }
+
+    .sound,
+    .btn,
+    .chip {
+      border: 0;
+      border-radius: 999px;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease, opacity .2s ease;
+    }
+
+    .sound {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 46px;
+      padding: 0 16px;
+      color: #fff;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+
+    .sound:hover,
+    .btn:hover,
+    .chip:hover {
+      transform: translateY(-2px);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+      align-items: center;
+      gap: 30px;
+      min-height: 620px;
+      padding: 28px 0 46px;
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: .18em;
+      font-weight: 950;
+      font-size: 12px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 18px;
+      font-size: clamp(42px, 7vw, 84px);
+      line-height: .92;
+      letter-spacing: -0.065em;
+      text-wrap: balance;
+    }
+
+    .hero-text {
+      max-width: 640px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: clamp(16px, 1.8vw, 20px);
+      line-height: 1.62;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 30px 0 22px;
+    }
+
+    .roulette-actions {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .roulette-actions .btn {
+      width: 100%;
+    }
+
+    .btn {
+      position: relative;
+      isolation: isolate;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 56px;
+      padding: 0 24px;
+      color: #1a1020;
+      font-weight: 1000;
+      background: linear-gradient(135deg, #ffe65c, #ff8c3e 44%, #ff3fd5);
+      box-shadow: 0 18px 46px rgba(255, 80, 140, .28), inset 0 1px 0 rgba(255,255,255,.45);
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: "";
+      position: absolute;
+      inset: -70% auto auto -35%;
+      width: 84px;
+      height: 240%;
+      background: rgba(255,255,255,.36);
+      transform: rotate(25deg);
+      animation: shine 2.9s infinite;
+      z-index: -1;
+    }
+
+    .btn.secondary {
+      color: #fff;
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.14);
+      box-shadow: none;
+    }
+
+    .btn.secondary::before {
+      display: none;
+    }
+
+    .btn:disabled {
+      opacity: .75;
+      transform: none;
+      cursor: wait;
+    }
+
+    @keyframes shine {
+      from { translate: -90px 0; }
+      to { translate: 420px 0; }
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 610px;
+    }
+
+    .stat {
+      min-width: 0;
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .stat strong {
+      display: block;
+      min-width: 0;
+      font-size: clamp(19px, 2.3vw, 32px);
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      overflow-wrap: anywhere;
+      hyphens: auto;
+    }
+
+    #lastRarity {
+      font-size: clamp(17px, 1.9vw, 28px);
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .panel,
+    .info-card,
+    .step {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.07));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .roulette {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-xl);
+      padding: 20px;
+    }
+
+    .roulette::before {
+      content: "";
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      right: -90px;
+      top: -110px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(66,234,255,.48), transparent 67%);
+      filter: blur(8px);
+    }
+
+    .roulette-head {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: max-content;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: #a9ffc8;
+      background: rgba(77,255,141,.12);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .pill.spinning {
+      color: #fff0a8;
+      background: rgba(255,228,92,.15);
+    }
+
+    .roulette-window {
+      position: relative;
+      height: 300px;
+      overflow: hidden;
+      border-radius: 28px;
+      background:
+        linear-gradient(90deg, rgba(7,7,27,.94), transparent 20%, transparent 80%, rgba(7,7,27,.94)),
+        radial-gradient(circle at center, rgba(255,255,255,.13), rgba(255,255,255,.04));
+      border: 1px solid rgba(255,255,255,.13);
+    }
+
+    .roulette-window::before,
+    .roulette-window::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 88px;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .roulette-window::before {
+      left: 0;
+      background: linear-gradient(90deg, rgba(7,7,27,.94), transparent);
+    }
+
+    .roulette-window::after {
+      right: 0;
+      background: linear-gradient(270deg, rgba(7,7,27,.94), transparent);
+    }
+
+    .marker {
+      position: absolute;
+      inset: 14px 50% 14px auto;
+      translate: 50% 0;
+      width: 4px;
+      border-radius: 999px;
+      background: linear-gradient(to bottom, transparent, var(--yellow), var(--pink), transparent);
+      box-shadow: 0 0 22px rgba(255,228,92,.9);
+      z-index: 5;
+    }
+
+    .marker::before,
+    .marker::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      translate: -50% 0;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+    }
+
+    .marker::before {
+      top: -2px;
+      border-bottom: 18px solid var(--yellow);
+    }
+
+    .marker::after {
+      bottom: -2px;
+      border-top: 18px solid var(--pink);
+    }
+
+    .track {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 calc(50% - 78px);
+      transform: translateX(0);
+      will-change: transform;
+    }
+
+    .brawler-card {
+      position: relative;
+      flex: 0 0 156px;
+      min-width: 0;
+      min-height: 226px;
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 16px;
+      text-align: center;
+      border-radius: 26px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.2);
+      background: linear-gradient(180deg, rgba(255,255,255,.17), rgba(255,255,255,.07));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 20px 45px rgba(0,0,0,.28);
+    }
+
+    .brawler-card::before {
+      content: "";
+      position: absolute;
+      inset: -20% -30% auto;
+      height: 120px;
+      background: var(--rarity-gradient);
+      opacity: .36;
+      filter: blur(20px);
+    }
+
+    .brawler-card.is-winner {
+      transform: scale(1.07);
+      box-shadow: 0 0 0 2px rgba(255,255,255,.35), 0 0 48px var(--rarity-glow), 0 28px 70px rgba(0,0,0,.45);
+    }
+
+    .orb,
+    .winner-orb {
+      position: relative;
+      display: grid;
+      place-items: center;
+      margin: 0 auto;
+      width: 86px;
+      height: 86px;
+      border-radius: 28px;
+      color: #181125;
+      background: var(--rarity-gradient);
+      font-weight: 1000;
+      letter-spacing: -0.08em;
+      font-size: 30px;
+      box-shadow: 0 12px 32px var(--rarity-glow), inset 0 1px 0 rgba(255,255,255,.55);
+    }
+
+    .brawler-card h3 {
+      position: relative;
+      margin: 0;
+      font-size: 21px;
+      line-height: 1.08;
+      overflow-wrap: anywhere;
+    }
+
+    .brawler-card p {
+      position: relative;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    [data-rarity="Стартовый"] { --rarity-gradient: linear-gradient(135deg, #ffffff, #a9b0c9); --rarity-glow: rgba(255,255,255,.42); }
+    [data-rarity="Редкий"] { --rarity-gradient: linear-gradient(135deg, #4dff8d, #1fcf68); --rarity-glow: rgba(77,255,141,.42); }
+    [data-rarity="Сверхредкий"] { --rarity-gradient: linear-gradient(135deg, #41eaff, #2d7dff); --rarity-glow: rgba(65,234,255,.38); }
+    [data-rarity="Эпический"] { --rarity-gradient: linear-gradient(135deg, #f063ff, #8b4dff); --rarity-glow: rgba(216,80,255,.4); }
+    [data-rarity="Мифический"] { --rarity-gradient: linear-gradient(135deg, #ff6d84, #ff2d6f); --rarity-glow: rgba(255,94,114,.44); }
+    [data-rarity="Легендарный"] { --rarity-gradient: linear-gradient(135deg, #fff15e, #ff9d29); --rarity-glow: rgba(255,215,73,.55); }
+    [data-rarity="Ультралегендарный"] { --rarity-gradient: linear-gradient(135deg, #fff15e, #41eaff 35%, #ff4fd8 72%, #fff15e); --rarity-glow: rgba(255,255,255,.62); }
+
+    .winner {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 16px;
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 26px;
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.13);
+    }
+
+    .winner-orb {
+      margin: 0;
+      --rarity-gradient: linear-gradient(135deg, #ffffff, #a9b0c9);
+      --rarity-glow: rgba(255,255,255,.2);
+    }
+
+    .winner p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .winner-label {
+      font-size: 13px;
+    }
+
+    .winner h2 {
+      margin: 2px 0 5px;
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+      overflow-wrap: anywhere;
+    }
+
+    .filters {
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin: 10px 0 66px;
+    }
+
+    .section-title {
+      margin-bottom: 22px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: clamp(30px, 4.2vw, 48px);
+      line-height: 1;
+      letter-spacing: -0.05em;
+      text-wrap: balance;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .filter-title {
+      margin-bottom: 12px;
+      font-weight: 900;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .chip {
+      min-height: 40px;
+      padding: 0 12px;
+      color: var(--muted);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16);
+      font-size: 13px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .chip.active {
+      color: #1a1020;
+      background: linear-gradient(135deg, #ffe65c, #ff8c3e 44%, #ff3fd5);
+      border-color: transparent;
+      font-weight: 1000;
+    }
+
+    .filter-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .section {
+      padding: 32px 0 58px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .info-card {
+      min-width: 0;
+      min-height: 214px;
+      padding: 22px;
+      border-radius: 28px;
+    }
+
+    .icon {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      margin-bottom: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.12);
+      font-size: 27px;
+    }
+
+    .info-card h3 {
+      margin-bottom: 10px;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .info-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.58;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 22px;
+      border-radius: 26px;
+    }
+
+    .step span {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      color: #11124a;
+      background: linear-gradient(135deg, var(--cyan), var(--pink));
+      font-weight: 1000;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 34px 0 42px;
+      border-top: 1px solid var(--line);
+      color: rgba(255,255,255,.58);
+      font-size: 13px;
+    }
+
+    .footer p {
+      margin: 0;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 1120px) {
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: unset;
+        padding-top: 10px;
+      }
+
+      .hero-copy {
+        text-align: center;
+      }
+
+      .hero-text,
+      .stats {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .actions {
+        justify-content: center;
+      }
+
+      .nav {
+        display: none;
+      }
+    }
+
+    @media (max-width: 850px) {
+      .filter-grid,
+      .cards,
+      .steps {
+        grid-template-columns: 1fr;
+      }
+
+      .cards {
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .page {
+        width: min(100% - 18px, 1180px);
+      }
+
+      .header {
+        top: 6px;
+        margin-top: 8px;
+        padding: 7px;
+        border-radius: 22px;
+      }
+
+      .brand small,
+      .sound span:last-child {
+        display: none;
+      }
+
+      .brand {
+        gap: 9px;
+      }
+
+      .brand-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+      }
+
+      .sound {
+        width: 44px;
+        min-height: 44px;
+        padding: 0;
+      }
+
+      .eyebrow {
+        margin-bottom: 8px;
+        font-size: 10px;
+        letter-spacing: .14em;
+      }
+
+      h1 {
+        margin-bottom: 0;
+        font-size: clamp(32px, 10.8vw, 46px);
+        line-height: .96;
+      }
+
+      .hero {
+        gap: 10px;
+        padding: 8px 0 18px;
+      }
+
+      .hero-copy {
+        text-align: left;
+      }
+
+      .hero-text,
+      .stats {
+        display: none;
+      }
+
+      .btn {
+        width: 100%;
+        min-height: 52px;
+        padding: 0 15px;
+        font-size: 14px;
+      }
+
+      .roulette {
+        padding: 11px;
+        border-radius: 24px;
+      }
+
+      .roulette-head {
+        margin-bottom: 10px;
+        font-size: 13px;
+      }
+
+      .pill {
+        padding: 6px 8px;
+        font-size: 10px;
+        letter-spacing: .06em;
+      }
+
+      .roulette-window {
+        height: 206px;
+        border-radius: 21px;
+      }
+
+      .roulette-window::before,
+      .roulette-window::after {
+        width: 38px;
+      }
+
+      .marker {
+        inset: 10px 50% 10px auto;
+      }
+
+      .marker::before,
+      .marker::after {
+        border-left-width: 12px;
+        border-right-width: 12px;
+      }
+
+      .marker::before {
+        border-bottom-width: 14px;
+      }
+
+      .marker::after {
+        border-top-width: 14px;
+      }
+
+      .track {
+        gap: 9px;
+        padding: 0 calc(50% - 60px);
+      }
+
+      .brawler-card {
+        flex-basis: 120px;
+        min-height: 166px;
+        gap: 8px;
+        border-radius: 20px;
+        padding: 10px;
+      }
+
+      .orb {
+        width: 58px;
+        height: 58px;
+        border-radius: 19px;
+        font-size: 22px;
+      }
+
+      .brawler-card h3 {
+        font-size: 16px;
+      }
+
+      .brawler-card p {
+        font-size: 11px;
+        line-height: 1.25;
+      }
+
+      .roulette-actions {
+        grid-template-columns: minmax(0, 1.15fr) minmax(104px, .85fr);
+        gap: 9px;
+        margin-top: 11px;
+      }
+
+      .winner {
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+        padding: 11px;
+        text-align: left;
+        border-radius: 20px;
+      }
+
+      .winner-orb {
+        width: 54px;
+        height: 54px;
+        margin: 0;
+        border-radius: 18px;
+        font-size: 22px;
+      }
+
+      .winner-label,
+      #winnerMeta {
+        font-size: 12px;
+      }
+
+      .winner h2 {
+        margin: 1px 0 3px;
+        font-size: 23px;
+      }
+
+      .filters {
+        padding: 20px;
+        margin-bottom: 44px;
+      }
+
+      .section-title h2 {
+        font-size: clamp(30px, 10vw, 42px);
+      }
+
+      .chip {
+        min-height: 38px;
+        padding-inline: 11px;
+        font-size: 12px;
+      }
+
+      .footer {
+        display: block;
+      }
+
+      .footer p + p {
+        margin-top: 10px;
+      }
+    }
+
+    @media (max-width: 380px), (max-height: 700px) and (max-width: 680px) {
+      .roulette-window {
+        height: 178px;
+      }
+
+      .brawler-card {
+        flex-basis: 112px;
+        min-height: 148px;
+      }
+
+      .orb {
+        width: 50px;
+        height: 50px;
+        border-radius: 17px;
+        font-size: 20px;
+      }
+
+      .brawler-card h3 {
+        font-size: 15px;
+      }
+
+      .winner {
+        padding: 9px;
+      }
+
+      .winner-orb {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        font-size: 20px;
+      }
+
+      .btn {
+        min-height: 48px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
 </head>
 <body>
   <canvas id="confetti" aria-hidden="true"></canvas>
 
-  <div class="page-shell">
-    <header class="site-header">
+  <div class="page">
+    <header class="header">
       <a class="brand" href="#top" aria-label="Brawl Roulette">
         <span class="brand-mark">BR</span>
         <span>
           <strong>Brawl Roulette</strong>
-          <small>фанатская рулетка бойцов</small>
+          <small>рулетка бойцов</small>
         </span>
       </a>
-
-      <nav class="nav-links" aria-label="Навигация">
+      <nav class="nav" aria-label="Навигация">
         <a href="#roulette">Рулетка</a>
-        <a href="#modes">Режимы</a>
-        <a href="#how">Как работает</a>
+        <a href="#filters">Фильтры</a>
+        <a href="#how">Как играть</a>
       </nav>
-
-      <button class="sound-toggle" id="soundToggle" type="button" aria-pressed="true">
+      <button class="sound" id="soundToggle" type="button" aria-pressed="true">
         <span aria-hidden="true">🔊</span>
-        <span class="sound-text">Звук</span>
+        <span>Звук</span>
       </button>
     </header>
 
     <main id="top">
       <section class="hero" id="roulette">
         <div class="hero-copy reveal">
-          <p class="eyebrow">104 бойца · фильтры · звук</p>
-          <h1>Крути рулетку и выбирай бойца</h1>
-          <p class="hero-text">
-            Запускай рулетку, включай фильтры и получай случайного бойца для следующей катки.
-          </p>
-
-          <div class="hero-actions">
-            <button class="primary-btn" id="spinBtn" type="button">
-              <span class="btn-glow"></span>
-              <span>Крутить рулетку</span>
-            </button>
-            <button class="ghost-btn mobile-filter-btn" id="mobileFilterBtn" type="button">Фильтры</button>
-          </div>
-
-          <div class="mini-stats" aria-label="Статистика рулетки">
-            <div><strong id="availableCount">104</strong><span>доступно</span></div>
-            <div><strong id="spinCount">0</strong><span>кручений</span></div>
-            <div><strong id="lastRarity">—</strong><span>редкость</span></div>
+          <p class="eyebrow">104 бойца · 7 классов · быстрый выбор</p>
+          <h1>Выбери бойца случайно</h1>
+          <p class="hero-text">Крути рулетку, настраивай фильтры и узнавай, за кого играть в следующем бою.</p>
+          <div class="stats" aria-label="Статистика рулетки">
+            <div class="stat"><strong id="availableCount">104</strong><span>доступно</span></div>
+            <div class="stat"><strong id="spinCount">0</strong><span>кручений</span></div>
+            <div class="stat"><strong id="lastRarity">—</strong><span>редкость</span></div>
           </div>
         </div>
 
-        <div class="roulette-card reveal">
-          <div class="roulette-topline">
+        <div class="roulette panel reveal">
+          <div class="roulette-head">
             <span>Рулетка карточек</span>
-            <span class="live-pill" id="statusPill">готово</span>
+            <span class="pill" id="statusPill">готово</span>
           </div>
-
           <div class="roulette-window" id="rouletteWindow" aria-label="Окно рулетки">
-            <div class="center-marker" aria-hidden="true"></div>
-            <div class="roulette-track" id="rouletteTrack"></div>
+            <div class="marker" aria-hidden="true"></div>
+            <div class="track" id="rouletteTrack"></div>
           </div>
-
-          <article class="winner-card" id="winnerCard" aria-live="polite">
+          <div class="roulette-actions">
+            <button class="btn" id="spinBtn" type="button">Крутить рулетку</button>
+            <button class="btn secondary" id="filterBtn" type="button">Фильтры</button>
+          </div>
+          <article class="winner" id="winnerCard" aria-live="polite">
             <div class="winner-orb" id="winnerOrb">?</div>
             <div>
-              <p class="winner-kicker">Пока никто не выпал</p>
+              <p class="winner-label" id="winnerLabel">Пока никто не выпал</p>
               <h2 id="winnerName">Нажми кнопку</h2>
               <p id="winnerMeta">и запусти рулетку</p>
             </div>
@@ -79,77 +1068,1126 @@
         </div>
       </section>
 
-      <section class="filters-panel reveal" id="filtersPanel" aria-label="Фильтры рулетки">
-        <div class="section-heading compact">
+      <section class="filters panel reveal" id="filters" aria-label="Фильтры рулетки">
+        <div class="section-title">
           <p class="eyebrow">Настрой выбор</p>
           <h2>Фильтры</h2>
         </div>
-
         <div class="filter-grid">
           <div>
             <div class="filter-title">Редкость</div>
-            <div class="chip-row" id="rarityChips"></div>
+            <div class="chips" id="rarityChips"></div>
           </div>
           <div>
             <div class="filter-title">Класс</div>
-            <div class="chip-row" id="classChips"></div>
+            <div class="chips" id="classChips"></div>
           </div>
         </div>
-
-        <div class="filters-footer">
-          <button class="ghost-btn" id="resetFilters" type="button">Сбросить</button>
-          <button class="primary-btn small" id="applyMobileFilters" type="button">Применить</button>
+        <div class="filter-actions">
+          <button class="btn secondary" id="resetFilters" type="button">Сбросить</button>
         </div>
       </section>
 
-      <section class="modes" id="modes">
-        <div class="section-heading reveal">
-          <p class="eyebrow">Выбирай стиль игры</p>
+      <section class="section" id="modes">
+        <div class="section-title reveal">
+          <p class="eyebrow">Выбирай как играть</p>
           <h2>Игровые режимы</h2>
         </div>
-        <div class="mode-grid">
+        <div class="cards">
           <article class="info-card reveal">
-            <span class="card-icon">🎲</span>
-            <h3>Обычная рулетка</h3>
-            <p>Выбирает любого бойца из полного списка — идеально для быстрых челленджей.</p>
+            <span class="icon">🎲</span>
+            <h3>Любой боец</h3>
+            <p>Рулетка выбирает случайного бойца из полного списка.</p>
           </article>
           <article class="info-card reveal">
-            <span class="card-icon">🏆</span>
+            <span class="icon">🏆</span>
             <h3>По редкости</h3>
-            <p>Можно крутить только эпических, мифических, легендарных или любых других.</p>
+            <p>Оставь только нужную редкость и крути внутри выбранной группы.</p>
           </article>
           <article class="info-card reveal">
-            <span class="card-icon">⚡</span>
+            <span class="icon">⚡</span>
             <h3>По классу</h3>
-            <p>Отдельно выбирай танков, убийц, стрелков, поддержку, контроль, урон или артиллерию.</p>
+            <p>Выбирай танков, убийц, поддержку, стрелков и другие классы.</p>
           </article>
           <article class="info-card reveal">
-            <span class="card-icon">🔥</span>
+            <span class="icon">🔥</span>
             <h3>Челлендж</h3>
-            <p>Выпавший боец — обязательный выбор для следующего боя. Перекрут запрещён.</p>
+            <p>Выпавший боец становится твоим выбором для следующего боя.</p>
           </article>
         </div>
       </section>
 
-      <section class="how" id="how">
-        <div class="section-heading reveal">
-          <p class="eyebrow">Всё просто</p>
-          <h2>Как пользоваться</h2>
+      <section class="section" id="how">
+        <div class="section-title reveal">
+          <p class="eyebrow">Просто и быстро</p>
+          <h2>Как играть</h2>
         </div>
         <div class="steps">
-          <div class="step reveal"><span>1</span><p>Выбери редкость или класс, если хочешь сузить список.</p></div>
+          <div class="step reveal"><span>1</span><p>Выбери фильтры или оставь полный список бойцов.</p></div>
           <div class="step reveal"><span>2</span><p>Нажми «Крутить рулетку» и дождись остановки карточек.</p></div>
-          <div class="step reveal"><span>3</span><p>Играй за выпавшего бойца или крути ещё раз для нового выбора.</p></div>
+          <div class="step reveal"><span>3</span><p>Играй за выпавшего бойца или крути ещё раз.</p></div>
         </div>
       </section>
     </main>
 
-    <footer class="site-footer">
-      <p>Фанатский проект по Brawl Stars. Не связан с Supercell, не одобрен и не спонсируется Supercell.</p>
-      
+    <footer class="footer">
+      <p>Фанатский проект для случайных каток и челленджей.</p>
+      <p>Не связан с Supercell, не одобрен и не спонсируется Supercell.</p>
     </footer>
   </div>
 
-  <script src="app.js" defer></script>
+  <script>
+    const BRAWLERS = [
+  {
+    "id": 1,
+    "name": "Шелли",
+    "en": "Shelly",
+    "rarity": "Стартовый",
+    "class": "Урон"
+  },
+  {
+    "id": 2,
+    "name": "Кольт",
+    "en": "Colt",
+    "rarity": "Редкий",
+    "class": "Урон"
+  },
+  {
+    "id": 3,
+    "name": "Булл",
+    "en": "Bull",
+    "rarity": "Редкий",
+    "class": "Танк"
+  },
+  {
+    "id": 4,
+    "name": "Брок",
+    "en": "Brock",
+    "rarity": "Редкий",
+    "class": "Стрелок"
+  },
+  {
+    "id": 5,
+    "name": "Барли",
+    "en": "Barley",
+    "rarity": "Редкий",
+    "class": "Артиллерия"
+  },
+  {
+    "id": 6,
+    "name": "Нита",
+    "en": "Nita",
+    "rarity": "Редкий",
+    "class": "Урон"
+  },
+  {
+    "id": 7,
+    "name": "Эль Примо",
+    "en": "El Primo",
+    "rarity": "Редкий",
+    "class": "Танк"
+  },
+  {
+    "id": 8,
+    "name": "Поко",
+    "en": "Poco",
+    "rarity": "Редкий",
+    "class": "Поддержка"
+  },
+  {
+    "id": 9,
+    "name": "Роза",
+    "en": "Rosa",
+    "rarity": "Редкий",
+    "class": "Танк"
+  },
+  {
+    "id": 10,
+    "name": "Рико",
+    "en": "Rico",
+    "rarity": "Сверхредкий",
+    "class": "Урон"
+  },
+  {
+    "id": 11,
+    "name": "Джесси",
+    "en": "Jessie",
+    "rarity": "Сверхредкий",
+    "class": "Контроль"
+  },
+  {
+    "id": 12,
+    "name": "Динамайк",
+    "en": "Dynamike",
+    "rarity": "Сверхредкий",
+    "class": "Артиллерия"
+  },
+  {
+    "id": 13,
+    "name": "Дэррил",
+    "en": "Darryl",
+    "rarity": "Сверхредкий",
+    "class": "Танк"
+  },
+  {
+    "id": 14,
+    "name": "Пенни",
+    "en": "Penny",
+    "rarity": "Сверхредкий",
+    "class": "Артиллерия"
+  },
+  {
+    "id": 15,
+    "name": "Тик",
+    "en": "Tick",
+    "rarity": "Сверхредкий",
+    "class": "Артиллерия"
+  },
+  {
+    "id": 16,
+    "name": "Карл",
+    "en": "Carl",
+    "rarity": "Сверхредкий",
+    "class": "Урон"
+  },
+  {
+    "id": 17,
+    "name": "8-БИТ",
+    "en": "8-Bit",
+    "rarity": "Сверхредкий",
+    "class": "Урон"
+  },
+  {
+    "id": 18,
+    "name": "Джеки",
+    "en": "Jacky",
+    "rarity": "Сверхредкий",
+    "class": "Танк"
+  },
+  {
+    "id": 19,
+    "name": "Гас",
+    "en": "Gus",
+    "rarity": "Сверхредкий",
+    "class": "Поддержка"
+  },
+  {
+    "id": 20,
+    "name": "Бо",
+    "en": "Bo",
+    "rarity": "Эпический",
+    "class": "Контроль"
+  },
+  {
+    "id": 21,
+    "name": "Пайпер",
+    "en": "Piper",
+    "rarity": "Эпический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 22,
+    "name": "Пэм",
+    "en": "Pam",
+    "rarity": "Эпический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 23,
+    "name": "Фрэнк",
+    "en": "Frank",
+    "rarity": "Эпический",
+    "class": "Танк"
+  },
+  {
+    "id": 24,
+    "name": "Биби",
+    "en": "Bibi",
+    "rarity": "Эпический",
+    "class": "Танк"
+  },
+  {
+    "id": 25,
+    "name": "Беа",
+    "en": "Bea",
+    "rarity": "Эпический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 26,
+    "name": "Эмз",
+    "en": "Emz",
+    "rarity": "Эпический",
+    "class": "Контроль"
+  },
+  {
+    "id": 27,
+    "name": "Гэйл",
+    "en": "Gale",
+    "rarity": "Эпический",
+    "class": "Контроль"
+  },
+  {
+    "id": 28,
+    "name": "Нани",
+    "en": "Nani",
+    "rarity": "Эпический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 29,
+    "name": "Колетт",
+    "en": "Colette",
+    "rarity": "Эпический",
+    "class": "Урон"
+  },
+  {
+    "id": 30,
+    "name": "Эдгар",
+    "en": "Edgar",
+    "rarity": "Эпический",
+    "class": "Убийца"
+  },
+  {
+    "id": 31,
+    "name": "Сту",
+    "en": "Stu",
+    "rarity": "Эпический",
+    "class": "Убийца"
+  },
+  {
+    "id": 32,
+    "name": "Белль",
+    "en": "Belle",
+    "rarity": "Эпический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 33,
+    "name": "Гром",
+    "en": "Grom",
+    "rarity": "Эпический",
+    "class": "Артиллерия"
+  },
+  {
+    "id": 34,
+    "name": "Грифф",
+    "en": "Griff",
+    "rarity": "Эпический",
+    "class": "Контроль"
+  },
+  {
+    "id": 35,
+    "name": "Эш",
+    "en": "Ash",
+    "rarity": "Эпический",
+    "class": "Танк"
+  },
+  {
+    "id": 36,
+    "name": "Лола",
+    "en": "Lola",
+    "rarity": "Эпический",
+    "class": "Урон"
+  },
+  {
+    "id": 37,
+    "name": "Бонни",
+    "en": "Bonnie",
+    "rarity": "Эпический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 38,
+    "name": "Сэм",
+    "en": "Sam",
+    "rarity": "Эпический",
+    "class": "Убийца"
+  },
+  {
+    "id": 39,
+    "name": "Мэнди",
+    "en": "Mandy",
+    "rarity": "Эпический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 40,
+    "name": "Мэйси",
+    "en": "Maisie",
+    "rarity": "Эпический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 41,
+    "name": "Хэнк",
+    "en": "Hank",
+    "rarity": "Эпический",
+    "class": "Танк"
+  },
+  {
+    "id": 42,
+    "name": "Перл",
+    "en": "Pearl",
+    "rarity": "Эпический",
+    "class": "Урон"
+  },
+  {
+    "id": 43,
+    "name": "Ларри и Лори",
+    "en": "Larry & Lawrie",
+    "rarity": "Эпический",
+    "class": "Артиллерия"
+  },
+  {
+    "id": 44,
+    "name": "Анджело",
+    "en": "Angelo",
+    "rarity": "Эпический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 45,
+    "name": "Берри",
+    "en": "Berry",
+    "rarity": "Эпический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 46,
+    "name": "Шейд",
+    "en": "Shade",
+    "rarity": "Эпический",
+    "class": "Убийца"
+  },
+  {
+    "id": 47,
+    "name": "Мипл",
+    "en": "Meeple",
+    "rarity": "Эпический",
+    "class": "Контроль"
+  },
+  {
+    "id": 48,
+    "name": "Транк",
+    "en": "Trunk",
+    "rarity": "Эпический",
+    "class": "Танк"
+  },
+  {
+    "id": 49,
+    "name": "Болт",
+    "en": "Bolt",
+    "rarity": "Эпический",
+    "class": "Танк"
+  },
+  {
+    "id": 50,
+    "name": "Мортис",
+    "en": "Mortis",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 51,
+    "name": "Тара",
+    "en": "Tara",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 52,
+    "name": "Джин",
+    "en": "Gene",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 53,
+    "name": "Мистер П.",
+    "en": "Mr. P",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 54,
+    "name": "Макс",
+    "en": "Max",
+    "rarity": "Мифический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 55,
+    "name": "Спраут",
+    "en": "Sprout",
+    "rarity": "Мифический",
+    "class": "Артиллерия"
+  },
+  {
+    "id": 56,
+    "name": "Лу",
+    "en": "Lou",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 57,
+    "name": "Байрон",
+    "en": "Byron",
+    "rarity": "Мифический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 58,
+    "name": "Гавс",
+    "en": "Ruffs",
+    "rarity": "Мифический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 59,
+    "name": "Скуик",
+    "en": "Squeak",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 60,
+    "name": "Базз",
+    "en": "Buzz",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 61,
+    "name": "Фэнг",
+    "en": "Fang",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 62,
+    "name": "Ева",
+    "en": "Eve",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 63,
+    "name": "Джанет",
+    "en": "Janet",
+    "rarity": "Мифический",
+    "class": "Стрелок"
+  },
+  {
+    "id": 64,
+    "name": "Отис",
+    "en": "Otis",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 65,
+    "name": "Бастер",
+    "en": "Buster",
+    "rarity": "Мифический",
+    "class": "Танк"
+  },
+  {
+    "id": 66,
+    "name": "Грей",
+    "en": "Gray",
+    "rarity": "Мифический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 67,
+    "name": "R-T",
+    "en": "R-T",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 68,
+    "name": "Виллоу",
+    "en": "Willow",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 69,
+    "name": "Даг",
+    "en": "Doug",
+    "rarity": "Мифический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 70,
+    "name": "Чак",
+    "en": "Chuck",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 71,
+    "name": "Чарли",
+    "en": "Charlie",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 72,
+    "name": "Мико",
+    "en": "Mico",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 73,
+    "name": "Мелоди",
+    "en": "Melodie",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 74,
+    "name": "Лили",
+    "en": "Lily",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 75,
+    "name": "Клэнси",
+    "en": "Clancy",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 76,
+    "name": "Мо",
+    "en": "Moe",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 77,
+    "name": "Джуджу",
+    "en": "Juju",
+    "rarity": "Мифический",
+    "class": "Артиллерия"
+  },
+  {
+    "id": 78,
+    "name": "Олли",
+    "en": "Ollie",
+    "rarity": "Мифический",
+    "class": "Танк"
+  },
+  {
+    "id": 79,
+    "name": "Луми",
+    "en": "Lumi",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 80,
+    "name": "Финкс",
+    "en": "Finx",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 81,
+    "name": "Джэ Ён",
+    "en": "Jae-Yong",
+    "rarity": "Мифический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 82,
+    "name": "Алли",
+    "en": "Alli",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 83,
+    "name": "Мина",
+    "en": "Mina",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 84,
+    "name": "Зигги",
+    "en": "Ziggy",
+    "rarity": "Мифический",
+    "class": "Контроль"
+  },
+  {
+    "id": 85,
+    "name": "Джиджи",
+    "en": "Gigi",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 86,
+    "name": "Глоуи",
+    "en": "Glowy",
+    "rarity": "Мифический",
+    "class": "Поддержка"
+  },
+  {
+    "id": 87,
+    "name": "Наджия",
+    "en": "Najia",
+    "rarity": "Мифический",
+    "class": "Урон"
+  },
+  {
+    "id": 88,
+    "name": "Дамиан",
+    "en": "Damian",
+    "rarity": "Мифический",
+    "class": "Танк"
+  },
+  {
+    "id": 89,
+    "name": "Старр Нова",
+    "en": "Starr Nova",
+    "rarity": "Мифический",
+    "class": "Убийца"
+  },
+  {
+    "id": 90,
+    "name": "Спайк",
+    "en": "Spike",
+    "rarity": "Легендарный",
+    "class": "Урон"
+  },
+  {
+    "id": 91,
+    "name": "Ворон",
+    "en": "Crow",
+    "rarity": "Легендарный",
+    "class": "Убийца"
+  },
+  {
+    "id": 92,
+    "name": "Леон",
+    "en": "Leon",
+    "rarity": "Легендарный",
+    "class": "Убийца"
+  },
+  {
+    "id": 93,
+    "name": "Сэнди",
+    "en": "Sandy",
+    "rarity": "Легендарный",
+    "class": "Контроль"
+  },
+  {
+    "id": 94,
+    "name": "Вольт",
+    "en": "Surge",
+    "rarity": "Легендарный",
+    "class": "Урон"
+  },
+  {
+    "id": 95,
+    "name": "Амбер",
+    "en": "Amber",
+    "rarity": "Легендарный",
+    "class": "Контроль"
+  },
+  {
+    "id": 96,
+    "name": "Мэг",
+    "en": "Meg",
+    "rarity": "Легендарный",
+    "class": "Танк"
+  },
+  {
+    "id": 97,
+    "name": "Честер",
+    "en": "Chester",
+    "rarity": "Легендарный",
+    "class": "Урон"
+  },
+  {
+    "id": 98,
+    "name": "Корделиус",
+    "en": "Cordelius",
+    "rarity": "Легендарный",
+    "class": "Убийца"
+  },
+  {
+    "id": 99,
+    "name": "Кит",
+    "en": "Kit",
+    "rarity": "Легендарный",
+    "class": "Поддержка"
+  },
+  {
+    "id": 100,
+    "name": "Драко",
+    "en": "Draco",
+    "rarity": "Легендарный",
+    "class": "Танк"
+  },
+  {
+    "id": 101,
+    "name": "Кэндзи",
+    "en": "Kenji",
+    "rarity": "Легендарный",
+    "class": "Убийца"
+  },
+  {
+    "id": 102,
+    "name": "Пирс",
+    "en": "Pierce",
+    "rarity": "Легендарный",
+    "class": "Стрелок"
+  },
+  {
+    "id": 103,
+    "name": "Кадзэ",
+    "en": "Kaze",
+    "rarity": "Ультралегендарный",
+    "class": "Убийца"
+  },
+  {
+    "id": 104,
+    "name": "Сириус",
+    "en": "Sirius",
+    "rarity": "Ультралегендарный",
+    "class": "Контроль"
+  }
+];
+
+    const RARITIES = ["Все", "Стартовый", "Редкий", "Сверхредкий", "Эпический", "Мифический", "Легендарный", "Ультралегендарный"];
+    const CLASSES = ["Все", "Урон", "Танк", "Стрелок", "Артиллерия", "Контроль", "Убийца", "Поддержка"];
+    const SHORT_RARITY = {
+      "Сверхредкий": "Сверх",
+      "Ультралегендарный": "Ультра"
+    };
+
+    const state = {
+      rarity: new Set(["Все"]),
+      class: new Set(["Все"]),
+      spinning: false,
+      spinCount: 0,
+      soundOn: true,
+      audio: null,
+      tickTimer: null
+    };
+
+    const els = {
+      track: document.querySelector("#rouletteTrack"),
+      window: document.querySelector("#rouletteWindow"),
+      spinBtn: document.querySelector("#spinBtn"),
+      filterBtn: document.querySelector("#filterBtn"),
+      soundToggle: document.querySelector("#soundToggle"),
+      statusPill: document.querySelector("#statusPill"),
+      winnerCard: document.querySelector("#winnerCard"),
+      winnerOrb: document.querySelector("#winnerOrb"),
+      winnerName: document.querySelector("#winnerName"),
+      winnerMeta: document.querySelector("#winnerMeta"),
+      winnerLabel: document.querySelector("#winnerLabel"),
+      availableCount: document.querySelector("#availableCount"),
+      spinCount: document.querySelector("#spinCount"),
+      lastRarity: document.querySelector("#lastRarity"),
+      rarityChips: document.querySelector("#rarityChips"),
+      classChips: document.querySelector("#classChips"),
+      resetFilters: document.querySelector("#resetFilters"),
+      filters: document.querySelector("#filters"),
+      confetti: document.querySelector("#confetti")
+    };
+
+    function initials(name) {
+      const parts = name.split(/[\s-]+/).filter(Boolean);
+      return parts.slice(0, 2).map(part => part[0]).join("").toUpperCase();
+    }
+
+    function cardTemplate(brawler, winner = false) {
+      return `
+        <article class="brawler-card${winner ? " is-winner" : ""}" data-rarity="${brawler.rarity}">
+          <div class="orb">${initials(brawler.name)}</div>
+          <h3>${brawler.name}</h3>
+          <p>${brawler.rarity}<br>${brawler.class}</p>
+        </article>
+      `;
+    }
+
+    function getFilteredBrawlers() {
+      return BRAWLERS.filter(brawler => {
+        const rarityOk = state.rarity.has("Все") || state.rarity.has(brawler.rarity);
+        const classOk = state.class.has("Все") || state.class.has(brawler.class);
+        return rarityOk && classOk;
+      });
+    }
+
+    function renderChips(container, values, group) {
+      container.innerHTML = values.map(value => `
+        <button class="chip" type="button" data-group="${group}" data-value="${value}" aria-pressed="false">${value}</button>
+      `).join("");
+    }
+
+    function toggleFilter(group, value) {
+      const set = state[group];
+      if (value === "Все") {
+        state[group] = new Set(["Все"]);
+      } else {
+        set.delete("Все");
+        set.has(value) ? set.delete(value) : set.add(value);
+        if (!set.size) set.add("Все");
+      }
+      updateChips();
+      updateAvailableCount();
+      renderIdleTrack();
+    }
+
+    function updateChips() {
+      document.querySelectorAll(".chip").forEach(chip => {
+        const active = state[chip.dataset.group].has(chip.dataset.value);
+        chip.classList.toggle("active", active);
+        chip.setAttribute("aria-pressed", String(active));
+      });
+    }
+
+    function updateAvailableCount() {
+      els.availableCount.textContent = getFilteredBrawlers().length;
+    }
+
+    function randomFrom(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function shufflePreview(list, size = 18) {
+      if (!list.length) return [];
+      return Array.from({ length: size }, () => randomFrom(list));
+    }
+
+    function renderIdleTrack() {
+      const list = getFilteredBrawlers();
+      els.track.style.transition = "none";
+      els.track.style.transform = "translateX(0px)";
+      els.track.innerHTML = shufflePreview(list).map(brawler => cardTemplate(brawler)).join("");
+    }
+
+    function ensureAudio() {
+      if (!state.soundOn) return null;
+      if (!state.audio) state.audio = new (window.AudioContext || window.webkitAudioContext)();
+      if (state.audio.state === "suspended") state.audio.resume();
+      return state.audio;
+    }
+
+    function playTone(freq, duration = 0.05, type = "square", volume = 0.04) {
+      const ctx = ensureAudio();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(volume, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    }
+
+    function playStart() {
+      playTone(320, 0.08, "sawtooth", 0.045);
+      setTimeout(() => playTone(520, 0.08, "sawtooth", 0.045), 80);
+    }
+
+    function playTick() {
+      playTone(900 + Math.random() * 260, 0.035, "square", 0.028);
+    }
+
+    function playWin() {
+      [523, 659, 784, 1046].forEach((freq, index) => {
+        setTimeout(() => playTone(freq, 0.12, "triangle", 0.055), index * 95);
+      });
+    }
+
+    function startTickLoop(duration) {
+      const started = performance.now();
+      const loop = () => {
+        if (!state.spinning) return;
+        const progress = Math.min(1, (performance.now() - started) / duration);
+        playTick();
+        state.tickTimer = setTimeout(loop, 42 + progress * 160);
+      };
+      loop();
+    }
+
+    function stopTickLoop() {
+      if (state.tickTimer) clearTimeout(state.tickTimer);
+      state.tickTimer = null;
+    }
+
+    function setSpinning(value) {
+      state.spinning = value;
+      els.spinBtn.disabled = value;
+      els.statusPill.textContent = value ? "крутится" : "готово";
+      els.statusPill.classList.toggle("spinning", value);
+    }
+
+    function buildSpinSequence(list, winner) {
+      const length = window.matchMedia("(max-width: 680px)").matches ? 42 : 54;
+      const sequence = Array.from({ length }, () => randomFrom(list));
+      sequence.push(winner);
+      return sequence;
+    }
+
+    function spin() {
+      if (state.spinning) return;
+      const list = getFilteredBrawlers();
+      if (!list.length) return;
+      const winner = randomFrom(list);
+      const sequence = buildSpinSequence(list, winner);
+      const winnerIndex = sequence.length - 1;
+      const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const duration = prefersReduced ? 250 : 4300 + Math.floor(Math.random() * 900);
+      setSpinning(true);
+      playStart();
+      startTickLoop(duration);
+      els.track.style.transition = "none";
+      els.track.style.transform = "translateX(0px)";
+      els.track.innerHTML = sequence.map((brawler, index) => cardTemplate(brawler, index === winnerIndex)).join("");
+      requestAnimationFrame(() => {
+        const winnerCard = els.track.children[winnerIndex];
+        const windowCenter = els.window.clientWidth / 2;
+        const cardCenter = winnerCard.offsetLeft + winnerCard.offsetWidth / 2;
+        const landing = windowCenter - cardCenter;
+        els.track.style.transition = `transform ${duration}ms cubic-bezier(.08,.78,.08,1)`;
+        els.track.style.transform = `translateX(${landing}px)`;
+      });
+      window.setTimeout(() => {
+        stopTickLoop();
+        setSpinning(false);
+        showWinner(winner);
+        playWin();
+        burstConfetti(winner.rarity);
+      }, duration + 90);
+    }
+
+    function showWinner(brawler) {
+      state.spinCount += 1;
+      els.spinCount.textContent = state.spinCount;
+      els.lastRarity.textContent = SHORT_RARITY[brawler.rarity] || brawler.rarity;
+      els.lastRarity.title = brawler.rarity;
+      els.winnerCard.dataset.rarity = brawler.rarity;
+      els.winnerOrb.textContent = initials(brawler.name);
+      els.winnerName.textContent = brawler.name;
+      els.winnerMeta.textContent = `${brawler.rarity} · ${brawler.class}`;
+      els.winnerLabel.textContent = "Выпал боец";
+    }
+
+    function rarityColor(rarity) {
+      const colors = {
+        "Стартовый": "#ffffff",
+        "Редкий": "#4dff8d",
+        "Сверхредкий": "#41eaff",
+        "Эпический": "#d850ff",
+        "Мифический": "#ff5e72",
+        "Легендарный": "#ffd749",
+        "Ультралегендарный": "#ff4fd8"
+      };
+      return colors[rarity] || "#ffffff";
+    }
+
+    function burstConfetti(rarity) {
+      const canvas = els.confetti;
+      const ctx = canvas.getContext("2d");
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const base = rarityColor(rarity);
+      const palette = ["#ffffff", "#41eaff", "#ff4fd8", "#ffd749"];
+      const particles = Array.from({ length: 92 }, () => ({
+        x: window.innerWidth / 2,
+        y: window.innerHeight * 0.34,
+        vx: (Math.random() - 0.5) * 12,
+        vy: -Math.random() * 8 - 3,
+        size: Math.random() * 7 + 4,
+        life: Math.random() * 50 + 60,
+        color: Math.random() > 0.34 ? base : palette[Math.floor(Math.random() * palette.length)],
+        rotate: Math.random() * Math.PI
+      }));
+      let frame = 0;
+      function draw() {
+        frame += 1;
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.18;
+          p.rotate += 0.18;
+          p.life -= 1;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.life / 70);
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rotate);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.62);
+          ctx.restore();
+        });
+        if (frame < 110) requestAnimationFrame(draw);
+        else ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      }
+      draw();
+    }
+
+    function bindUI() {
+      renderChips(els.rarityChips, RARITIES, "rarity");
+      renderChips(els.classChips, CLASSES, "class");
+      updateChips();
+      els.spinBtn.addEventListener("click", spin);
+      els.filterBtn.addEventListener("click", () => els.filters.scrollIntoView({ behavior: "smooth", block: "start" }));
+      els.soundToggle.addEventListener("click", () => {
+        state.soundOn = !state.soundOn;
+        els.soundToggle.setAttribute("aria-pressed", String(state.soundOn));
+        els.soundToggle.querySelector("span").textContent = state.soundOn ? "🔊" : "🔇";
+        if (state.soundOn) playTone(620, 0.06, "triangle", 0.035);
+      });
+      els.resetFilters.addEventListener("click", () => {
+        state.rarity = new Set(["Все"]);
+        state.class = new Set(["Все"]);
+        updateChips();
+        updateAvailableCount();
+        renderIdleTrack();
+      });
+      document.addEventListener("click", event => {
+        const chip = event.target.closest(".chip");
+        if (chip) toggleFilter(chip.dataset.group, chip.dataset.value);
+      });
+      document.addEventListener("keydown", event => {
+        if ((event.key === " " || event.key === "Enter") && document.activeElement === document.body) spin();
+      });
+    }
+
+    function revealOnScroll() {
+      const io = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) entry.target.classList.add("visible");
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+    }
+
+    bindUI();
+    updateAvailableCount();
+    renderIdleTrack();
+    revealOnScroll();
+  </script>
 </body>
 </html>
