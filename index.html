@@ -233,18 +233,6 @@
       margin: 30px 0 22px;
     }
 
-    .roulette-actions {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .roulette-actions .btn {
-      width: 100%;
-    }
-
     .btn {
       position: relative;
       isolation: isolate;
@@ -459,6 +447,11 @@
       padding: 0 calc(50% - 78px);
       transform: translateX(0);
       will-change: transform;
+      backface-visibility: hidden;
+    }
+
+    .track.is-spinning .brawler-card {
+      filter: saturate(1.18) brightness(1.04);
     }
 
     .brawler-card {
@@ -490,7 +483,14 @@
 
     .brawler-card.is-winner {
       transform: scale(1.07);
+      animation: winner-pop .46s cubic-bezier(.2, 1.4, .25, 1) both;
       box-shadow: 0 0 0 2px rgba(255,255,255,.35), 0 0 48px var(--rarity-glow), 0 28px 70px rgba(0,0,0,.45);
+    }
+
+    @keyframes winner-pop {
+      0% { transform: scale(.94); }
+      55% { transform: scale(1.12); }
+      100% { transform: scale(1.07); }
     }
 
     .orb,
@@ -767,14 +767,13 @@
 
     @media (max-width: 680px) {
       .page {
-        width: min(100% - 18px, 1180px);
+        width: min(100% - 22px, 1180px);
       }
 
       .header {
-        top: 6px;
-        margin-top: 8px;
-        padding: 7px;
-        border-radius: 22px;
+        top: 8px;
+        margin-top: 10px;
+        border-radius: 24px;
       }
 
       .brand small,
@@ -782,159 +781,105 @@
         display: none;
       }
 
-      .brand {
-        gap: 9px;
-      }
-
       .brand-mark {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         border-radius: 14px;
       }
 
       .sound {
-        width: 44px;
-        min-height: 44px;
+        width: 46px;
         padding: 0;
       }
 
-      .eyebrow {
-        margin-bottom: 8px;
-        font-size: 10px;
-        letter-spacing: .14em;
-      }
-
       h1 {
-        margin-bottom: 0;
-        font-size: clamp(32px, 10.8vw, 46px);
-        line-height: .96;
+        font-size: clamp(42px, 13vw, 62px);
       }
 
       .hero {
-        gap: 10px;
-        padding: 8px 0 18px;
+        gap: 18px;
+        padding-bottom: 20px;
       }
 
-      .hero-copy {
-        text-align: left;
+      .hero-text {
+        font-size: 16px;
       }
 
-      .hero-text,
-      .stats {
-        display: none;
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr;
       }
 
       .btn {
         width: 100%;
-        min-height: 52px;
-        padding: 0 15px;
-        font-size: 14px;
+        min-height: 58px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 12px 8px;
+        border-radius: 18px;
+      }
+
+      .stat strong,
+      #lastRarity {
+        font-size: 17px;
+      }
+
+      .stat span {
+        font-size: 11px;
       }
 
       .roulette {
-        padding: 11px;
-        border-radius: 24px;
-      }
-
-      .roulette-head {
-        margin-bottom: 10px;
-        font-size: 13px;
-      }
-
-      .pill {
-        padding: 6px 8px;
-        font-size: 10px;
-        letter-spacing: .06em;
+        padding: 12px;
+        border-radius: 26px;
       }
 
       .roulette-window {
-        height: 206px;
-        border-radius: 21px;
+        height: 254px;
+        border-radius: 23px;
       }
 
       .roulette-window::before,
       .roulette-window::after {
-        width: 38px;
-      }
-
-      .marker {
-        inset: 10px 50% 10px auto;
-      }
-
-      .marker::before,
-      .marker::after {
-        border-left-width: 12px;
-        border-right-width: 12px;
-      }
-
-      .marker::before {
-        border-bottom-width: 14px;
-      }
-
-      .marker::after {
-        border-top-width: 14px;
+        width: 42px;
       }
 
       .track {
-        gap: 9px;
-        padding: 0 calc(50% - 60px);
+        gap: 10px;
+        padding: 0 calc(50% - 68px);
       }
 
       .brawler-card {
-        flex-basis: 120px;
-        min-height: 166px;
-        gap: 8px;
-        border-radius: 20px;
-        padding: 10px;
+        flex-basis: 136px;
+        min-height: 204px;
+        border-radius: 22px;
+        padding: 13px;
       }
 
       .orb {
-        width: 58px;
-        height: 58px;
-        border-radius: 19px;
-        font-size: 22px;
+        width: 74px;
+        height: 74px;
+        border-radius: 24px;
+        font-size: 26px;
       }
 
       .brawler-card h3 {
-        font-size: 16px;
-      }
-
-      .brawler-card p {
-        font-size: 11px;
-        line-height: 1.25;
-      }
-
-      .roulette-actions {
-        grid-template-columns: minmax(0, 1.15fr) minmax(104px, .85fr);
-        gap: 9px;
-        margin-top: 11px;
+        font-size: 18px;
       }
 
       .winner {
-        grid-template-columns: auto minmax(0, 1fr);
-        gap: 10px;
-        margin-top: 10px;
-        padding: 11px;
-        text-align: left;
-        border-radius: 20px;
+        grid-template-columns: 1fr;
+        text-align: center;
+        border-radius: 22px;
       }
 
       .winner-orb {
-        width: 54px;
-        height: 54px;
-        margin: 0;
-        border-radius: 18px;
-        font-size: 22px;
-      }
-
-      .winner-label,
-      #winnerMeta {
-        font-size: 12px;
-      }
-
-      .winner h2 {
-        margin: 1px 0 3px;
-        font-size: 23px;
+        margin: 0 auto;
       }
 
       .filters {
@@ -958,43 +903,6 @@
 
       .footer p + p {
         margin-top: 10px;
-      }
-    }
-
-    @media (max-width: 380px), (max-height: 700px) and (max-width: 680px) {
-      .roulette-window {
-        height: 178px;
-      }
-
-      .brawler-card {
-        flex-basis: 112px;
-        min-height: 148px;
-      }
-
-      .orb {
-        width: 50px;
-        height: 50px;
-        border-radius: 17px;
-        font-size: 20px;
-      }
-
-      .brawler-card h3 {
-        font-size: 15px;
-      }
-
-      .winner {
-        padding: 9px;
-      }
-
-      .winner-orb {
-        width: 48px;
-        height: 48px;
-        border-radius: 16px;
-        font-size: 20px;
-      }
-
-      .btn {
-        min-height: 48px;
       }
     }
 
@@ -1037,6 +945,10 @@
           <p class="eyebrow">104 бойца · 7 классов · быстрый выбор</p>
           <h1>Выбери бойца случайно</h1>
           <p class="hero-text">Крути рулетку, настраивай фильтры и узнавай, за кого играть в следующем бою.</p>
+          <div class="actions">
+            <button class="btn" id="spinBtn" type="button">Крутить рулетку</button>
+            <button class="btn secondary" id="filterBtn" type="button">Фильтры</button>
+          </div>
           <div class="stats" aria-label="Статистика рулетки">
             <div class="stat"><strong id="availableCount">104</strong><span>доступно</span></div>
             <div class="stat"><strong id="spinCount">0</strong><span>кручений</span></div>
@@ -1052,10 +964,6 @@
           <div class="roulette-window" id="rouletteWindow" aria-label="Окно рулетки">
             <div class="marker" aria-hidden="true"></div>
             <div class="track" id="rouletteTrack"></div>
-          </div>
-          <div class="roulette-actions">
-            <button class="btn" id="spinBtn" type="button">Крутить рулетку</button>
-            <button class="btn secondary" id="filterBtn" type="button">Фильтры</button>
           </div>
           <article class="winner" id="winnerCard" aria-live="polite">
             <div class="winner-orb" id="winnerOrb">?</div>
@@ -1882,7 +1790,8 @@
       spinCount: 0,
       soundOn: true,
       audio: null,
-      tickTimer: null
+      tickTimer: null,
+      currentAnimation: null
     };
 
     const els = {
@@ -1966,13 +1875,30 @@
       return list[Math.floor(Math.random() * list.length)];
     }
 
-    function shufflePreview(list, size = 18) {
+    function isCompactScreen() {
+      return window.matchMedia("(max-width: 680px)").matches;
+    }
+
+    function shufflePreview(list, size = 24) {
       if (!list.length) return [];
       return Array.from({ length: size }, () => randomFrom(list));
     }
 
+    function centerCardTransform(index) {
+      const card = els.track.children[index];
+      if (!card) return 0;
+      const windowCenter = els.window.clientWidth / 2;
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      return windowCenter - cardCenter;
+    }
+
     function renderIdleTrack() {
       const list = getFilteredBrawlers();
+      if (state.currentAnimation) {
+        state.currentAnimation.cancel();
+        state.currentAnimation = null;
+      }
+      els.track.classList.remove("is-spinning");
       els.track.style.transition = "none";
       els.track.style.transform = "translateX(0px)";
       els.track.innerHTML = shufflePreview(list).map(brawler => cardTemplate(brawler)).join("");
@@ -2034,15 +1960,34 @@
     function setSpinning(value) {
       state.spinning = value;
       els.spinBtn.disabled = value;
+      els.track.classList.toggle("is-spinning", value);
       els.statusPill.textContent = value ? "крутится" : "готово";
       els.statusPill.classList.toggle("spinning", value);
     }
 
     function buildSpinSequence(list, winner) {
-      const length = window.matchMedia("(max-width: 680px)").matches ? 42 : 54;
-      const sequence = Array.from({ length }, () => randomFrom(list));
-      sequence.push(winner);
-      return sequence;
+      const compact = isCompactScreen();
+      const lead = compact ? 7 : 9;
+      const fastRun = compact ? 66 : 84;
+      const tail = compact ? 14 : 18;
+      const extra = Math.floor(Math.random() * (compact ? 10 : 16));
+      const winnerIndex = lead + fastRun + extra;
+      const total = winnerIndex + tail + 1;
+      const sequence = Array.from({ length: total }, () => randomFrom(list));
+      sequence[winnerIndex] = winner;
+      return { sequence, winnerIndex, startIndex: lead };
+    }
+
+    function finishSpin(winner, winnerIndex, landing) {
+      stopTickLoop();
+      setSpinning(false);
+      els.track.style.transition = "none";
+      els.track.style.transform = `translateX(${landing}px)`;
+      const winnerCard = els.track.children[winnerIndex];
+      if (winnerCard) winnerCard.classList.add("is-winner");
+      showWinner(winner);
+      playWin();
+      burstConfetti(winner.rarity);
     }
 
     function spin() {
@@ -2050,31 +1995,57 @@
       const list = getFilteredBrawlers();
       if (!list.length) return;
       const winner = randomFrom(list);
-      const sequence = buildSpinSequence(list, winner);
-      const winnerIndex = sequence.length - 1;
+      const { sequence, winnerIndex, startIndex } = buildSpinSequence(list, winner);
       const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const duration = prefersReduced ? 250 : 4300 + Math.floor(Math.random() * 900);
+      const duration = prefersReduced ? 900 : (isCompactScreen() ? 5800 : 6600) + Math.floor(Math.random() * 900);
       setSpinning(true);
       playStart();
       startTickLoop(duration);
+      if (state.currentAnimation) {
+        state.currentAnimation.cancel();
+        state.currentAnimation = null;
+      }
       els.track.style.transition = "none";
-      els.track.style.transform = "translateX(0px)";
-      els.track.innerHTML = sequence.map((brawler, index) => cardTemplate(brawler, index === winnerIndex)).join("");
-      requestAnimationFrame(() => {
-        const winnerCard = els.track.children[winnerIndex];
-        const windowCenter = els.window.clientWidth / 2;
-        const cardCenter = winnerCard.offsetLeft + winnerCard.offsetWidth / 2;
-        const landing = windowCenter - cardCenter;
-        els.track.style.transition = `transform ${duration}ms cubic-bezier(.08,.78,.08,1)`;
-        els.track.style.transform = `translateX(${landing}px)`;
-      });
-      window.setTimeout(() => {
-        stopTickLoop();
-        setSpinning(false);
-        showWinner(winner);
-        playWin();
-        burstConfetti(winner.rarity);
-      }, duration + 90);
+      els.track.innerHTML = sequence.map(brawler => cardTemplate(brawler)).join("");
+      els.track.getBoundingClientRect();
+      const start = centerCardTransform(startIndex);
+      const landing = centerCardTransform(winnerIndex);
+      const nearFinish = landing + (landing < start ? 34 : -34);
+      let finished = false;
+      const complete = () => {
+        if (finished) return;
+        finished = true;
+        if (state.currentAnimation) {
+          state.currentAnimation.cancel();
+          state.currentAnimation = null;
+        }
+        finishSpin(winner, winnerIndex, landing);
+      };
+      els.track.style.transform = `translateX(${start}px)`;
+      els.track.getBoundingClientRect();
+
+      if (els.track.animate) {
+        const animation = els.track.animate([
+          { transform: `translateX(${start}px)`, offset: 0 },
+          { transform: `translateX(${nearFinish}px)`, offset: 0.94 },
+          { transform: `translateX(${landing}px)`, offset: 1 }
+        ], {
+          duration,
+          easing: "cubic-bezier(.08,.72,.03,1)",
+          fill: "forwards"
+        });
+        state.currentAnimation = animation;
+        animation.onfinish = complete;
+        window.setTimeout(complete, duration + 220);
+      } else {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            els.track.style.transition = `transform ${duration}ms cubic-bezier(.08,.72,.03,1)`;
+            els.track.style.transform = `translateX(${landing}px)`;
+          });
+        });
+        window.setTimeout(complete, duration + 120);
+      }
     }
 
     function showWinner(brawler) {
